@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ lesson.title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right, #fbc2eb, #a6c1ee);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 90%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            font-size: 1em;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #output {
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+
+        a {
+            text-decoration: none;
+            color: #0077cc;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        a:hover {
+            color: #005fa3;
+        }
+    </style>
+    <script>
+        async function checkCode() {
+            const code = document.getElementById('code').value;
+            const expected = document.getElementById('expected').value;
+            const response = await fetch('/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ code: code, expected: expected })
+            });
+            const result = await response.json();
+            const outputDiv = document.getElementById('output');
+            if (result.success) {
+                outputDiv.innerHTML = '<span style="color:green;">✔ Всё правильно!</span>';
+            } else if (result.error) {
+                outputDiv.innerHTML = '<span style="color:red;">Ошибка: ' + result.error + '</span>';
+            } else {
+                outputDiv.innerHTML = '<span style="color:red;">Неверный результат.<br>Ожидалось: ' + result.expected + '<br>Получено: ' + result.output + '</span>';
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/">← Назад</a>
+        <h1>{{ lesson.title }}</h1>
+        <p>{{ lesson.description }}</p>
+        <textarea id="code" placeholder="Напишите свой код здесь..."></textarea><br>
+        <input type="hidden" id="expected" value="{{ lesson.expected_output }}">
+        <button onclick="checkCode()">Проверить</button>
+        <div id="output"></div>
+    </div>
+</body>
+
+</html>
