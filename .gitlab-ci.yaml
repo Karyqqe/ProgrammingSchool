@@ -1,0 +1,31 @@
+build container:
+  tags:
+    - karyqqe-runner
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "web"
+      changes:
+        - Dockerfile
+        - .gitlab-ci.yml
+  needs:
+    - job: secret_detection
+      optional: true
+    - job: scan-codebase
+      optional: true
+  image:
+    name: "gcr.io/kaniko-project/executor:debug"
+    entrypoint: [""]
+  before_script:
+    - |
+    - echo ${CI_PROJECT_NAME}
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${GIT_USER}" "${GIT_TOKEN}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+  script:
+    - echo ${CI_REGISTRY}
+    - |
+      export CONTAINER_NAME="${CI_REGISTRY_IMAGE}/${CI_PROJECT_NAME}:$CI_PIPELINE_ID"
+      echo "Container name: ${CONTAINER_NAME}"
+    - /kaniko/executor
+      --skip-tls-verify
+      --context  $CI_PROJECT_DIR
+      --dockerfile Dockerfile
+      --destination ${CONTAINER_NAME}
