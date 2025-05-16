@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>{{ lesson.title }}</title>
+    <title>{{ lesson.title }} - Практика</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -69,11 +69,16 @@
             font-size: 1.1em;
         }
 
+        .nav-links {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
         a {
             text-decoration: none;
             color: #0077cc;
-            display: inline-block;
-            margin-bottom: 20px;
+            font-size: 1em;
         }
 
         a:hover {
@@ -104,8 +109,11 @@
 
 <body>
     <div class="container">
-        <a href="/">← Назад</a>
-        <h1>{{ lesson.title }}</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('lesson_theory', lesson_id=lesson.id) }}">← Назад к теории</a>
+            <a href="{{ url_for('index') }}">К списку уроков →</a>
+        </div>
+        <h1>{{ lesson.title }} - Практика</h1>
         <p>{{ lesson.description }}</p>
         <textarea id="code" placeholder="Напишите свой код здесь..."></textarea><br>
         <input type="hidden" id="expected" value="{{ lesson.expected_output }}">
