@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import io
 import contextlib
 import markdown
+import safeexec
 
 app = Flask(__name__)
 
@@ -409,21 +410,30 @@ def lesson_practice(lesson_id):
 @app.route('/check', methods=['POST'])
 def check():
     code = request.form['code']
-    expected = request.form['expected']
+    expected = request.form['expected'].strip()
 
-    # Захват вывода
-    output = io.StringIO()
     try:
-        with contextlib.redirect_stdout(output):
-            exec(code, {})
+        # Запуск кода с ограничениями
+        result = safeexec.safeexec(
+            cmd=["python3", "-c", code],
+            time_limit=2,               # сек.
+            memory_limit=64 * 1024 * 1024,  # 64 MB
+            output_limit=2048,         # max 2 KB вывода
+            realtime_limit=5
+        )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
-    result = output.getvalue().strip()
-    if result == expected:
-        return jsonify({"success": True, "output": result})
+    stdout = result.stdout.decode().strip()
+    stderr = result.stderr.decode().strip()
+
+    if result.returncode != 0:
+        return jsonify({"success": False, "error": stderr or "Код завершился с ошибкой."})
+
+    if stdout == expected:
+        return jsonify({"success": True, "output": stdout})
     else:
-        return jsonify({"success": False, "output": result, "expected": expected})
+        return jsonify({"success": False, "output": stdout, "expected": expected})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
